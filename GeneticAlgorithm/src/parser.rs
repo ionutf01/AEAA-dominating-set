@@ -16,22 +16,21 @@ pub fn read_instance(filename: &str) -> Result<Graph> {
 
         match row {
             0 => {
-                let nodes = usize::from_str(extract_word(&sentence,2)?.as_str())?;
-                let edges = usize::from_str(extract_word(&sentence,3)?.as_str())?;
+                let nodes = usize::from_str(extract_word(&sentence, 2)?.as_str())?;
+                let edges = usize::from_str(extract_word(&sentence, 3)?.as_str())?;
 
-                graph.matrix=vec![vec![false;nodes];nodes];
-                graph.nodes=nodes;
-                graph.edges=edges;
-            },
+                graph.matrix = vec![vec![false; nodes]; nodes];
+                graph.nodes = nodes;
+                graph.edges = edges;
+            }
             _ => {
-                let x = usize::from_str(extract_word(&sentence,0)?.as_str())?-1;
-                let y = usize::from_str(extract_word(&sentence,1)?.as_str())?-1;
-                graph.matrix[x][y]=true;
-                graph.matrix[y][x]=true;
+                let x = usize::from_str(extract_word(&sentence, 0)?.as_str())? - 1;
+                let y = usize::from_str(extract_word(&sentence, 1)?.as_str())? - 1;
+                graph.matrix[x][y] = true;
+                graph.matrix[y][x] = true;
             }
         };
     }
-
 
     Ok(graph)
 }
