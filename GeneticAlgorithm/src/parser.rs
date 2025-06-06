@@ -35,6 +35,19 @@ pub fn read_instance(filename: &str) -> Result<Graph> {
     Ok(graph)
 }
 
+pub fn read_first_row(filename: &str) -> Result<i32> {
+    let file = File::open(filename)?;
+
+    let reader = io::BufReader::new(file);
+
+    for line in reader.lines() {
+        let sentence = line?;
+        let nodes = i32::from_str(extract_word(&sentence, 0)?.as_str())?;
+        return Ok(nodes);
+    }
+    Ok(0)
+}
+
 fn extract_word(sentence: &str, index: usize) -> Result<String> {
     let words: Vec<&str> = sentence.split_whitespace().collect();
     let Some(word) = words.get(index) else {

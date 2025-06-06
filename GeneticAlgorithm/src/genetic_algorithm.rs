@@ -24,8 +24,8 @@ impl Default for GeneticAlgorithm {
 impl GeneticAlgorithm {
     pub fn new(graph: Graph, population_size: usize) -> Self {
         let population = vec![Individual::default(); population_size];
-        // let mutation_prob = 1f64 / population_size as f64;
-        let mutation_prob = 0.01;
+        let mutation_prob = 10f64 / population_size as f64;
+        // let mutation_prob = 0.01;
         let n_ds = 10;
         let n_core = 3;
 
@@ -208,7 +208,7 @@ impl GeneticAlgorithm {
                 }
             }
 
-            if fitness >= best_fitness {
+            if fitness > best_fitness {
                 ind = x_best_temp;
                 best_fitness = fitness;
             }
@@ -302,7 +302,6 @@ impl GeneticAlgorithm {
         let mut x_core = Individual {
             solution: intersection,
         };
-        println!("[x_core]{:?}", x_core);
 
         loop {
             let n_core = x_core.solution.iter().filter(|v| **v == true).count();
@@ -340,26 +339,9 @@ impl GeneticAlgorithm {
         Some(x_core)
     }
 
-    pub fn run(&mut self, max_iterations: usize) -> Result<()> {
-        // let nodes = vec![2, 5, 9, 11, 14, 15, 17, 19, 22, 23, 25, 26, 28, 31, 32];
-        // let mut ind = Individual::new(self.graph.nodes);
-        // for i in nodes {
-        //     ind.solution[i - 1] = true;
-        // }
-        // let obj = self.evaluate(&ind);
-        // println!("[ind]{:?}", ind);
-
-        // println!("[Obj]{}", obj);
-        // if let Some(best) = self.filtering(&ind) {
-        //     let obj = self.evaluate(&best);
-        //     println!("[ind]{:?}", ind);
-
-        //     println!("[Obj]{}", obj);
-        // }
-
-        // panic!();
+    pub fn run(&mut self, max_iterations: usize) -> Result<(f64, u32, Individual)> {
+     
         self.initialize_population();
-        let mut mean = 0f64;
         let mut best = f64::NEG_INFINITY;
         let mut best_individual = Individual::default();
 
@@ -381,13 +363,7 @@ impl GeneticAlgorithm {
             }
 
             indices.sort_by(|&a, &b| eval[b].partial_cmp(&eval[a]).unwrap());
-
-            if iteration % 100 == 0 {
-                for &i in &indices {
-                    print!("{} {:.2} ", i, eval[i]);
-                }
-                println!();
-            }
+            // println!("Iteration: {iteration}");
 
             // keep the best individuals
             for i in 0..elitism {
@@ -396,7 +372,6 @@ impl GeneticAlgorithm {
             }
             let obj = self.evaluate(&self.population[next_pop[0]]);
 
-            mean += obj;
             if obj > best {
                 best = obj;
                 best_individual = self.population[next_pop[0]].clone();
@@ -438,8 +413,8 @@ impl GeneticAlgorithm {
                             self.population[i] = self.mutate(&self.population[i])?;
                             self.population[j] = self.mutate(&self.population[j])?;
 
-                            self.population[i] = self.local_search(&self.population[i], 20);
-                            self.population[j] = self.local_search(&self.population[j], 20);
+                            self.population[i] = self.local_search(&self.population[i], 10);
+                            self.population[j] = self.local_search(&self.population[j], 10);
 
                             let obj_i = self.evaluate(&self.population[i]);
                             let obj_j = self.evaluate(&self.population[j]);
@@ -447,7 +422,7 @@ impl GeneticAlgorithm {
                             self.update_dominating_sets(&mut dominating_sets, &self.population[i]);
                             self.update_dominating_sets(&mut dominating_sets, &self.population[j]);
 
-                            // applyy filtering
+                            // apply filtering
                             if let Some(ind) = self.filtering(&self.population[i]) {
                                 self.population[i] = ind;
                                 // update the dominating sets if needed
@@ -476,41 +451,39 @@ impl GeneticAlgorithm {
             }
         }
 
-        let obj = self.evaluate(&best_individual);
-        println!("[Obj]{}", obj);
-        let conflicts = self.count_conflicts(&best_individual);
-        println!("[conflicts]{}", conflicts);
+        let mut obj = self.evaluate(&best_individual);
 
-        for (index, node) in best_individual.solution.iter().enumerate() {
-            if *node == true {
-                print!("{}, ", index + 1);
+        // for (index, node) in best_individual.solution.iter().enumerate() {
+        //     if *node == true {
+        //         print!("{}, ", index + 1);
+        //     }
+        // }
+        let mut obj_elite = 0f64;
+
+        let elite = self.elite_inspiration(&mut dominating_sets, &best_individual);
+        let mut best_elite: Option<Individual> = None;
+        if let Some(ind) = elite {
+            if let Some(best) = self.filtering(&ind) {
+                obj_elite = self.evaluate(&best);
+                best_elite = Some(best)
             }
-        }
-
+        };
         if let Some(best) = self.filtering(&best_individual) {
             best_individual = best;
-            println!("[]{:?}", best_individual);
-            let obj = self.evaluate(&best_individual);
-            println!("[Obj]{}", obj);
-            let conflicts = self.count_conflicts(&best_individual);
-            println!("[conflicts]{}", conflicts);
-            for (index, node) in best_individual.solution.iter().enumerate() {
-                if *node == true {
-                    print!("{}, ", index + 1);
+            obj = self.evaluate(&best_individual);
+
+            if obj_elite > obj {
+                if let Some(ind) = best_elite {
+                    best_individual = ind;
+                    obj=obj_elite;
                 }
             }
+         
         }
-        // println!("[dominating_sets]{:?}", dominating_sets);
-        // println!("[dominating_sets]{:?}", dominating_sets.len());
-        // let elite = self.elite_inspiration(&mut dominating_sets, &best_individual);
-        // println!("[elite]{:?}", elite);
+        let conflicts = self.count_conflicts(&best_individual);
 
-        // if let Some(elite) = elite {
-        //     let obj_elite = self.evaluate(&elite);
-        //     println!("[obj_elite]{:?}", obj_elite);
-        // }
+        Ok((obj, conflicts, best_individual))
 
-        Ok(())
     }
     pub fn count_conflicts(&self, ind: &Individual) -> u32 {
         let mut count = 0u32;
@@ -521,7 +494,7 @@ impl GeneticAlgorithm {
                 for j in 0..total_nodes {
                     if self.graph.matrix[i][j] == true && ind.solution[j] == true {
                         count += 1;
-                        println!("[conflict]{i}, {j}");
+                        // println!("[conflict]{i}, {j}");
                     }
                 }
             }
