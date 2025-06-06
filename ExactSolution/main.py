@@ -1,5 +1,6 @@
 import sys
 import time
+import os
 from itertools import combinations
 
 def k_dominating_set(graph_file, k, i, j):
@@ -31,52 +32,73 @@ def k_dominating_set(graph_file, k, i, j):
     rwb_graph = apply_rule_1(rwb_graph)
     print(f"[Time] apply_rule_1: {time.time() - t_start:.3f} sec")
     print(f"[After Rule 1] Vertex count: {len(rwb_graph)}")
+    print(f"[Stats] Colors: {sum(1 for d in rwb_graph.values() if d['color'] == 'red')} red, "
+      f"{sum(1 for d in rwb_graph.values() if d['color'] == 'white')} white, "
+      f"{sum(1 for d in rwb_graph.values() if d['color'] == 'blue')} blue")
 
     for p in range(1, i - 1):
         while True:
             t_start = time.time()
             modified_graph = rule_2_p(rwb_graph, k, i, j, p)
             duration = time.time() - t_start
-            print(f"[Time] rule_2_p (p={p}): {duration:.3f} sec")
             if modified_graph == rwb_graph:
                 break
             rwb_graph = modified_graph
-            print(f"[After Rule 2_p] Vertex count: {len(rwb_graph)}")
+    print(f"[Time] rule_2_p (p={p}): {duration:.3f} sec")
+    print(f"[After Rule 2_p] Vertex count: {len(rwb_graph)}")
+    print(f"[Stats] Colors: {sum(1 for d in rwb_graph.values() if d['color'] == 'red')} red, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'white')} white, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'blue')} blue")
 
     while True:
         t_start = time.time()
         modified_graph = apply_rule_3(rwb_graph, k, i, j)
         duration = time.time() - t_start
-        print(f"[Time] apply_rule_3: {duration:.3f} sec")
         if modified_graph == rwb_graph:
             break
         rwb_graph = modified_graph
-        print(f"[After Rule 3] Vertex count: {len(rwb_graph)}")
+
+    print(f"[Time] apply_rule_3: {duration:.3f} sec")
+    print(f"[After Rule 3] Vertex count: {len(rwb_graph)}")
+    print(f"[Stats] Colors: {sum(1 for d in rwb_graph.values() if d['color'] == 'red')} red, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'white')} white, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'blue')} blue")
 
     while True:
         t_start = time.time()
         modified_graph = apply_rule_4(rwb_graph)
         duration = time.time() - t_start
-        print(f"[Time] apply_rule_4: {duration:.3f} sec")
         if modified_graph == rwb_graph:
             break
         rwb_graph = modified_graph
-        print(f"[After Rule 4] Vertex count: {len(rwb_graph)}")
+
+    print(f"[Time] apply_rule_4: {duration:.3f} sec")
+    print(f"[After Rule 4] Vertex count: {len(rwb_graph)}")
+    print(f"[Stats] Colors: {sum(1 for d in rwb_graph.values() if d['color'] == 'red')} red, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'white')} white, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'blue')} blue")
 
     while True:
         t_start = time.time()
         modified_graph = apply_rule_5(rwb_graph)
         duration = time.time() - t_start
-        print(f"[Time] apply_rule_5: {duration:.3f} sec")
         if modified_graph == rwb_graph:
             break
         rwb_graph = modified_graph
-        print(f"[After Rule 5] Vertex count: {len(rwb_graph)}")
+
+    print(f"[Time] apply_rule_5: {duration:.3f} sec")
+    print(f"[After Rule 5] Vertex count: {len(rwb_graph)}")
+    print(f"[Stats] Colors: {sum(1 for d in rwb_graph.values() if d['color'] == 'red')} red, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'white')} white, "
+        f"{sum(1 for d in rwb_graph.values() if d['color'] == 'blue')} blue")
 
     t_start = time.time()
     result = apply_rule_6(rwb_graph, k, i, j)
     print(f"[Time] apply_rule_6: {time.time() - t_start:.3f} sec")
     print(f"[After Rule 6] Vertex count: {len(rwb_graph)}")
+    print(f"[Stats] Colors: {sum(1 for d in rwb_graph.values() if d['color'] == 'red')} red, "
+      f"{sum(1 for d in rwb_graph.values() if d['color'] == 'white')} white, "
+      f"{sum(1 for d in rwb_graph.values() if d['color'] == 'blue')} blue")
 
     if result == "NO":
         return None
@@ -86,7 +108,6 @@ def k_dominating_set(graph_file, k, i, j):
     print(f"[Time] find_dominating_set: {time.time() - t_start:.3f} sec")
 
     return dominating_set
-
 
 def read_graph_from_file(graph_file):
     """
@@ -132,7 +153,6 @@ def read_graph_from_file(graph_file):
         print("Error: Invalid data in file.")
         return None
 
-
 def initialize_rwb_graph(graph):
     """
     Initializes the graph as an rwb-graph by coloring all vertices blue.
@@ -155,7 +175,6 @@ def initialize_rwb_graph(graph):
         }
     return rwb_graph
 
-
 def apply_rule_1(rwb_graph):
     """
     Applies Rule 1: Color all isolated blue vertices of G red.
@@ -170,7 +189,6 @@ def apply_rule_1(rwb_graph):
         if data['color'] == 'blue' and not data['neighbors']:
             rwb_graph[vertex]['color'] = 'red'
     return rwb_graph
-
 
 def rule_2_p(rwb_graph, k, i, j, p):
     """
@@ -214,7 +232,6 @@ def rule_2_p(rwb_graph, k, i, j, p):
                 return rwb_graph
     return rwb_graph
 
-
 def find_common_blue_neighbors(rwb_graph, U):
     """
     Finds the common blue neighbors of a set of vertices U.
@@ -235,7 +252,6 @@ def find_common_blue_neighbors(rwb_graph, U):
         common_neighbors.intersection_update(neighbors)
 
     return [v for v in common_neighbors if rwb_graph[v]['color'] == 'blue']
-
 
 def apply_rule_3(rwb_graph, k, i, j):
     """
@@ -265,7 +281,6 @@ def apply_rule_3(rwb_graph, k, i, j):
                     rwb_graph[neighbor]['color'] = 'white'
                 return rwb_graph
     return rwb_graph
-
 
 def apply_rule_4(rwb_graph):
     """
@@ -297,7 +312,6 @@ def apply_rule_4(rwb_graph):
     if vertices_to_delete:
         return apply_rule_1(rwb_graph)
     return rwb_graph
-
 
 def apply_rule_5(rwb_graph):
     """
@@ -335,7 +349,6 @@ def apply_rule_5(rwb_graph):
         return apply_rule_1(rwb_graph)
     return rwb_graph
 
-
 def apply_rule_6(rwb_graph, k, i, j):
     """
     Applies Rule 6: Checks the number of red and blue vertices.
@@ -354,7 +367,6 @@ def apply_rule_6(rwb_graph, k, i, j):
     if red_count > k or blue_count > j * (k ** i) + sum(k ** q for q in range(2, i + 1)):
         return "NO"
     return rwb_graph
-
 
 def all_subsets(vertices, size):
     """
@@ -379,7 +391,6 @@ def all_subsets(vertices, size):
         for subset in all_subsets(rest, size - 1):
             subsets.append(first + subset)
     return subsets
-
 
 def find_dominating_set_test(rwb_graph, k):
     """
@@ -420,9 +431,6 @@ def find_dominating_set_test(rwb_graph, k):
 
     return backtrack(0, [])
 
-
-# In the main function, replace the call to find_dominating_set with find_dominating_set_test
-# result = find_dominating_set_test(rwb_graph, k)
 def find_dominating_set(rwb_graph, k):
     """
     Finds a dominating set of size at most k in the reduced graph using backtracking.
@@ -469,7 +477,6 @@ def find_dominating_set(rwb_graph, k):
     print("Order of vertices:", vertices)
     return backtrack(0, [])
 
-
 def read_solution_file(sol_file):
     """
     Reads the expected dominating set from a .sol file.
@@ -492,22 +499,57 @@ def read_solution_file(sol_file):
         print("Error: Invalid data in solution file.")
         return None
 
+def is_kij_free(graph, i, j):
+    """
+    Checks if the graph is K_{i,j}-free.
 
-# Example Usage:
+    Args:
+        graph: Dict[int, List[int]] - Adjacency list
+        i: int - size of the first part
+        j: int - size of the second part
+
+    Returns:
+        True if the graph is K_{i,j}-free, False otherwise
+    """
+    vertices = list(graph.keys())
+    
+    for A in combinations(vertices, i):
+        # Get the common neighbors of all vertices in A
+        common_neighbors = set(graph[A[0]])
+        for a in A[1:]:
+            common_neighbors &= set(graph[a])
+        
+        if len(common_neighbors) < j:
+            continue  # Not enough candidates for B
+
+        for B in combinations(common_neighbors, j):
+            # Check if all edges exist between each a in A and each b in B
+            if all(b in graph[a] for a in A for b in B):
+                print(f"Found K_{{{i},{j}}} between A={A} and B={B}")
+                return False  # Not K_{i,j}-free
+
+    return True  # No such bipartite complete subgraph found
+
 if __name__ == "__main__":
-    print(">>> STARTING TEST <<<")
+    graph_file = "bremen_subgraph_50.gr"
+    sol_file = "bremen_subgraph_50.sol"
 
-    graph_file = "graph_20.gr"
-    sol_file = "graph_20.sol"
+    graph_path = os.path.join("TestInstances", graph_file)
+    sol_path = os.path.join("TestInstances", sol_file)
+
     k = 9
     i = 3
-    j = 3
+    j = 2
 
-    result = k_dominating_set(graph_file, k, i, j)
+    start_time = time.time()
+    result = k_dominating_set(graph_path, k, i, j)
+    end_time = time.time()
 
     print(">>> FINISHED CALL TO k_dominating_set <<<")
+    print(f"Execution Time: {end_time - start_time:.4f} seconds")
 
-    expected_solution = read_solution_file(sol_file)
+
+    expected_solution = read_solution_file(sol_path)
 
     if result:
         size = result[0]
